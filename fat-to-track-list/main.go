@@ -15,6 +15,10 @@ import (
 	"strings"
 )
 
+import "github.com/mitchellh/go-wordwrap"
+
+const width uint = 34
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -28,13 +32,15 @@ func main() {
 		if folderMatch {
 			isStarted = true
 			folderIndex++
-			fmt.Printf("\n\nFolder %d - %v\n\n", folderIndex, fixAlbumName(line))
+			fmt.Printf("\n\n===========  Fol # %d  =============\n", folderIndex)
+			fmt.Printf("  %v\n", indent(fixAlbumName(line), 2))
 		}
 		fileMatch, _ := regexp.MatchString("^[^/]+", line)
 		if fileMatch {
 			if isStarted {
 				fileIndex++
-				fmt.Printf("\t%5d: %v\n", fileIndex, fixFileName(line))
+				fmt.Printf("%4d: ", fileIndex)
+				fmt.Println(indent(fixFileName(line), 6))
 			}
 		}
 	}
@@ -48,7 +54,8 @@ func main() {
 func fixAlbumName(in string) string {
 	res := strings.Replace(strings.Title(in), "/", "", -1)
 	res = strings.Replace(res, "-", " ", -1)
-	return res
+	wrapped := wordwrap.WrapString(res, width)
+	return wrapped
 }
 
 func fixFileName(in string) string {
@@ -56,5 +63,10 @@ func fixFileName(in string) string {
 	res = strings.TrimSuffix(res, ".mp3")
 	res = strings.Replace(res, "_", "", -1)
 	res = strings.Title(res)
-	return res
+	wrapped := wordwrap.WrapString(res, width)
+	return wrapped
+}
+
+func indent(in string, num int) string {
+	return strings.Replace(in, "\n", "\n"+strings.Repeat(" ", num), -1)
 }
